@@ -8,20 +8,21 @@ import (
 func main() {
 	data, _ := os.ReadFile("./words.txt")
 
-	wordCount := countWords(data)
+	wordCount := CountWords(data)
 	fmt.Println(wordCount)
 }
 
-func countWords(data []byte) int {
+func CountWords(data []byte) int {
 	wordCount := 0
-
+	if len(data) == 0 {
+		return 0
+	}
 	for _, x := range data {
 		if x == ' ' {
 			fmt.Println("space detected")
 			wordCount++
 		}
 	}
-
 	wordCount++
 
 	return wordCount
