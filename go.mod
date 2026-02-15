@@ -1,3 +1,3 @@
-module github.com/himucodes/counter
+module github.com/HimuCodes/counter
 
-go 1.25.5
+go 1.25.3

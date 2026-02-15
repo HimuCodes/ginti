@@ -2,28 +2,68 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
+	"strings"
+	"unicode"
+	"unicode/utf8"
 )
 
 func main() {
-	data, _ := os.ReadFile("./words.txt")
+	filename := "words.txt"
 
-	wordCount := CountWords(data)
+	log.SetFlags(0)
+
+	file, err := os.Open(filename)
+	if err != nil {
+		log.Fatalln("failed to read file:", err)
+	}
+
+	wordCount := CountWordsInFile(file)
 	fmt.Println(wordCount)
 }
 
-func CountWords(data []byte) int {
+func CountWordsInFile(file *os.File) int {
 	wordCount := 0
-	if len(data) == 0 {
-		return 0
-	}
-	for _, x := range data {
-		if x == ' ' {
-			fmt.Println("space detected")
-			wordCount++
+	isInsideWord := false
+
+	const bufferSize = 1
+	buffer := make([]byte, bufferSize)
+
+	leftover := []byte{}
+
+	for {
+		size, err := file.Read(buffer)
+		if err != nil {
+			break
 		}
+
+		subBuffer := append(leftover, buffer[:size]...)
+
+		for len(subBuffer) > 0 {
+
+			r, rsize := utf8.DecodeRune(subBuffer)
+
+			if r == utf8.RuneError {
+				break
+			}
+			subBuffer = subBuffer[rsize:]
+
+			if !unicode.IsSpace(r) && !isInsideWord {
+				wordCount++
+			}
+
+			isInsideWord = !unicode.IsSpace(r)
+		}
+
+		leftover = nil
+		leftover = append(leftover, subBuffer...)
 	}
-	wordCount++
 
 	return wordCount
+}
+
+func CountWords(data []byte) int {
+	words := strings.Fields(string(data))
+	return len(words)
 }
