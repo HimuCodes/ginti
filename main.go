@@ -3,13 +3,13 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"log"
 	"os"
-	"strings"
 )
 
 func main() {
-	filename := "new_words.txt"
+	filename := "utf8.txt"
 
 	log.SetFlags(0)
 
@@ -18,11 +18,11 @@ func main() {
 		log.Fatalln("failed to read file:", err)
 	}
 
-	wordCount := CountWordsInFile(file)
+	wordCount := CountWords(file)
 	fmt.Println(wordCount)
 }
 
-func CountWordsInFile(file *os.File) int {
+func CountWords(file io.Reader) int {
 	wordCount := 0
 
 	scanner := bufio.NewScanner(file)
@@ -32,9 +32,4 @@ func CountWordsInFile(file *os.File) int {
 		wordCount++
 	}
 	return wordCount
-}
-
-func CountWords(data []byte) int {
-	words := strings.Fields(string(data))
-	return len(words)
 }

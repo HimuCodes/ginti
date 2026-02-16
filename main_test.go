@@ -1,6 +1,7 @@
 package main_test
 
 import (
+	"strings"
 	"testing"
 
 	counter "github.com/HimuCodes/counter"
@@ -62,7 +63,8 @@ func TestCountWords(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			result := counter.CountWords([]byte(tc.input))
+			r := strings.NewReader(tc.input)
+			result := counter.CountWords(r)
 			if result != tc.wants {
 				t.Logf("expected: %d got: %d", tc.wants, result)
 				t.Fail()
