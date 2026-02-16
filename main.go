@@ -6,11 +6,10 @@ import (
 	"log"
 	"os"
 	"strings"
-	"unicode"
 )
 
 func main() {
-	filename := "lots_of_words.txt"
+	filename := "new_words.txt"
 
 	log.SetFlags(0)
 
@@ -25,24 +24,13 @@ func main() {
 
 func CountWordsInFile(file *os.File) int {
 	wordCount := 0
-	isInsideWord := false
 
-	_ = isInsideWord
+	scanner := bufio.NewScanner(file)
+	scanner.Split(bufio.ScanWords)
 
-	reader := bufio.NewReader(file)
-	for {
-		r, _, err := reader.ReadRune()
-		if err != nil {
-			break
-		}
-
-		if !unicode.IsSpace(r) && !isInsideWord {
-			wordCount++
-		}
-
-		isInsideWord = !unicode.IsSpace(r)
+	for scanner.Scan() {
+		wordCount++
 	}
-
 	return wordCount
 }
 
