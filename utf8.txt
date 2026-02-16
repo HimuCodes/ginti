@@ -1,0 +1,5 @@
+Hello, 世界!
+This sentence has emojis: 🚀
+Русский текст (Russian text).
+النص العربي (Arabic text).
+Café jalapeño piñata.
