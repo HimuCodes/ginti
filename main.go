@@ -18,9 +18,17 @@ func main() {
 	total := 0
 	filenames := os.Args[1:]
 
+	didError := false
+
 	for _, filename := range filenames {
 
-		wordCount := CountWordsInFile(filename)
+		wordCount, err := CountWordsInFile(filename)
+		if err != nil {
+			didError = true
+			fmt.Fprintln(os.Stderr, "counter:", err)
+			continue
+		}
+
 		total = total + wordCount
 
 		fmt.Println(wordCount, filename)
@@ -29,15 +37,21 @@ func main() {
 	if len(filenames) > 1 {
 		fmt.Println(total, "total")
 	}
+
+	if didError {
+		os.Exit(1)
+	}
 }
 
-func CountWordsInFile(filename string) int {
+func CountWordsInFile(filename string) (int, error) {
 	file, err := os.Open(filename)
 	if err != nil {
-		log.Fatalln("error: failed to read file:", err)
+		return 0, err
 	}
 
-	return CountWords(file)
+	defer file.Close()
+
+	return CountWords(file), nil
 }
 
 func CountWords(file io.Reader) int {
