@@ -11,10 +11,6 @@ import (
 func main() {
 	log.SetFlags(0)
 
-	if len(os.Args) < 2 {
-		log.Fatalln("error: no filename specified")
-	}
-
 	total := 0
 	filenames := os.Args[1:]
 
@@ -34,6 +30,11 @@ func main() {
 		fmt.Println(wordCount, filename)
 	}
 
+	if len(filenames) == 0 {
+		wordCount := CountWords(os.Stdin)
+		fmt.Println(wordCount)
+	}
+
 	if len(filenames) > 1 {
 		fmt.Println(total, "total")
 	}
@@ -51,7 +52,9 @@ func CountWordsInFile(filename string) (int, error) {
 
 	defer file.Close()
 
-	return CountWords(file), nil
+	count := CountWords(file)
+
+	return count, nil
 }
 
 func CountWords(file io.Reader) int {
