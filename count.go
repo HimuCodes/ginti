@@ -6,17 +6,29 @@ import (
 	"os"
 )
 
-func CountWordsInFile(filename string) (int, error) {
+type Counts struct {
+	Bytes int
+	Words int
+	Lines int
+}
+
+func CountFile(filename string) (Counts, error) {
 	file, err := os.Open(filename)
 	if err != nil {
-		return 0, err
+		return Counts{}, err
 	}
 
 	defer file.Close()
 
-	count := CountWords(file)
+	byteCount := CountBytes(file)
+	wordCount := CountWords(file)
+	lineCount := CountLines(file)
 
-	return count, nil
+	return Counts{
+		Bytes: byteCount,
+		Words: wordCount,
+		Lines: lineCount,
+	}, nil
 }
 
 func CountWords(file io.Reader) int {
