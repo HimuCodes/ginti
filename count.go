@@ -12,6 +12,25 @@ type Counts struct {
 	Lines int
 }
 
+func GetCounts(f io.ReadSeeker) Counts {
+	const offsetStart = 0
+
+	byteCount := CountBytes(f)
+	f.Seek(offsetStart, io.SeekStart)
+
+	wordCount := CountWords(f)
+	f.Seek(offsetStart, io.SeekStart)
+
+	lineCount := CountLines(f)
+	f.Seek(offsetStart, io.SeekStart)
+
+	return Counts{
+		Bytes: byteCount,
+		Words: wordCount,
+		Lines: lineCount,
+	}
+}
+
 func CountFile(filename string) (Counts, error) {
 	file, err := os.Open(filename)
 	if err != nil {
@@ -20,22 +39,9 @@ func CountFile(filename string) (Counts, error) {
 
 	defer file.Close()
 
-	const offsetStart = 0
+	counts := GetCounts(file)
 
-	byteCount := CountBytes(file)
-	file.Seek(offsetStart, io.SeekStart)
-
-	wordCount := CountWords(file)
-	file.Seek(offsetStart, io.SeekStart)
-
-	lineCount := CountLines(file)
-	file.Seek(offsetStart, io.SeekStart)
-
-	return Counts{
-		Bytes: byteCount,
-		Words: wordCount,
-		Lines: lineCount,
-	}, nil
+	return counts, nil
 }
 
 func CountWords(file io.Reader) int {

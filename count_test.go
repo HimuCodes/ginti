@@ -186,3 +186,34 @@ func TestCountBytes(t *testing.T) {
 		})
 	}
 }
+
+func TestGetCounts(t *testing.T) {
+	testCases := []struct {
+		name  string
+		input strings
+		wants counter.Counts
+	}{
+		{
+			name:  "simple five words",
+			input: "one two three four five\n",
+			wants: counter.Counts{
+				Lines: 1,
+				Words: 5,
+				Bytes: 24,
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			r := strings.NewReader(tc.input)
+
+			res := counter.GetCounts(r)
+
+			if res != tc.wants {
+				t.Logf("expected: %v got: %v", tc.wants, res)
+				t.Fail()
+			}
+		})
+	}
+}
