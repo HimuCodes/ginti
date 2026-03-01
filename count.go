@@ -13,12 +13,23 @@ type Counts struct {
 	Lines int
 }
 
-func (c Counts) Print(w io.Writer, filename string) {
-	if filename == "" {
-		fmt.Fprintf(w, "%8d %8d %8d\n", c.Lines, c.Words, c.Bytes)
-	} else {
-		fmt.Fprintf(w, "%8d %8d %8d %s\n", c.Lines, c.Words, c.Bytes, filename)
+// Add will modify the values of the count by
+// adding the values from the other.
+func (c Counts) Add(other Counts) Counts {
+	c.Bytes += other.Bytes
+	c.Words += other.Words
+	c.Lines += other.Lines
+
+	return c
+}
+
+func (c Counts) Print(w io.Writer, filenames ...string) {
+	fmt.Fprintf(w, "%8d %8d %8d", c.Lines, c.Words, c.Bytes)
+
+	for _, filename := range filenames {
+		fmt.Fprintf(w, " %s", filename)
 	}
+	fmt.Fprintln(w)
 }
 
 func GetCounts(f io.ReadSeeker) Counts {

@@ -368,57 +368,50 @@ func TestGetCounts(t *testing.T) {
 
 func TestPrint(t *testing.T) {
 	testCases := []struct {
-		name  string
-		input struct {
-			counts   counter.Counts
-			filename string
-		}
-		wants string
+		name      string
+		counts    counter.Counts
+		filenames []string
+		wants     string
 	}{
 		{
 			name: "simple five words with filename",
-			input: struct {
-				counts   counter.Counts
-				filename string
-			}{
-				counts: counter.Counts{
-					Lines: 1,
-					Words: 5,
-					Bytes: 24,
-				},
-				filename: "words.txt",
+			counts: counter.Counts{
+				Lines: 1,
+				Words: 5,
+				Bytes: 24,
 			},
-			wants: "       1        5       24 words.txt\n",
+			filenames: []string{"words.txt"},
+			wants:     "       1        5       24 words.txt\n",
 		},
 		{
 			name: "empty counts no filename",
-			input: struct {
-				counts   counter.Counts
-				filename string
-			}{
-				counts: counter.Counts{
-					Lines: 0,
-					Words: 0,
-					Bytes: 0,
-				},
-				filename: "",
+			counts: counter.Counts{
+				Lines: 0,
+				Words: 0,
+				Bytes: 0,
 			},
-			wants: "       0        0        0\n",
+			filenames: nil,
+			wants:     "       0        0        0\n",
 		},
 		{
 			name: "large numbers with filename",
-			input: struct {
-				counts   counter.Counts
-				filename string
-			}{
-				counts: counter.Counts{
-					Lines: 1000,
-					Words: 5000,
-					Bytes: 30000,
-				},
-				filename: "big.txt",
+			counts: counter.Counts{
+				Lines: 1000,
+				Words: 5000,
+				Bytes: 30000,
 			},
-			wants: "    1000     5000    30000 big.txt\n",
+			filenames: []string{"big.txt"},
+			wants:     "    1000     5000    30000 big.txt\n",
+		},
+		{
+			name: "multiple filenames",
+			counts: counter.Counts{
+				Lines: 10,
+				Words: 20,
+				Bytes: 100,
+			},
+			filenames: []string{"a.txt", "b.txt"},
+			wants:     "      10       20      100 a.txt b.txt\n",
 		},
 	}
 
@@ -426,10 +419,55 @@ func TestPrint(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			buffer := &bytes.Buffer{}
 
-			tc.input.counts.Print(buffer, tc.input.filename)
+			tc.counts.Print(buffer, tc.filenames...)
 
 			if buffer.String() != tc.wants {
 				t.Logf("expected: %q got: %q", tc.wants, buffer.String())
+				t.Fail()
+			}
+		})
+	}
+}
+
+
+func TestAddCounts(t *testing.T) {
+	type inputs struct {
+		counts counter.Counts
+		other  counter.Counts
+	}
+	testCases := []struct {
+		name  string
+		input inputs
+		wants counter.Counts
+	}{
+		{
+			name: "simple add by one",
+			input: inputs{
+				counts: counter.Counts{
+					Lines: 1,
+					Words: 1,
+					Bytes: 1,
+				},
+				other: counter.Counts{
+					Lines: 1,
+					Words: 1,
+					Bytes: 1,
+				},
+			},
+			wants: counter.Counts{
+				Lines: 2,
+				Words: 2,
+				Bytes: 2,
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			result := tc.input.counts.Add(tc.input.other)
+
+			if result != tc.wants {
+				t.Logf("expected: %v got: %v", tc.wants, result)
 				t.Fail()
 			}
 		})
