@@ -370,18 +370,24 @@ func TestPrint(t *testing.T) {
 	testCases := []struct {
 		name      string
 		counts    counter.Counts
+		opts      counter.DisplayOptions
 		filenames []string
 		wants     string
 	}{
 		{
-			name: "simple five words with filename",
+			name: "simple five words with filename show all",
 			counts: counter.Counts{
 				Lines: 1,
 				Words: 5,
 				Bytes: 24,
 			},
+			opts: counter.DisplayOptions{
+				ShowLines: true,
+				ShowWords: true,
+				ShowBytes: true,
+			},
 			filenames: []string{"words.txt"},
-			wants:     "       1        5       24 words.txt\n",
+			wants:     "1 5 24 words.txt\n",
 		},
 		{
 			name: "empty counts no filename",
@@ -390,8 +396,13 @@ func TestPrint(t *testing.T) {
 				Words: 0,
 				Bytes: 0,
 			},
+			opts: counter.DisplayOptions{
+				ShowLines: true,
+				ShowWords: true,
+				ShowBytes: true,
+			},
 			filenames: nil,
-			wants:     "       0        0        0\n",
+			wants:     "0 0 0\n",
 		},
 		{
 			name: "large numbers with filename",
@@ -400,8 +411,13 @@ func TestPrint(t *testing.T) {
 				Words: 5000,
 				Bytes: 30000,
 			},
+			opts: counter.DisplayOptions{
+				ShowLines: true,
+				ShowWords: true,
+				ShowBytes: true,
+			},
 			filenames: []string{"big.txt"},
-			wants:     "    1000     5000    30000 big.txt\n",
+			wants:     "1000 5000 30000 big.txt\n",
 		},
 		{
 			name: "multiple filenames",
@@ -410,8 +426,88 @@ func TestPrint(t *testing.T) {
 				Words: 20,
 				Bytes: 100,
 			},
+			opts: counter.DisplayOptions{
+				ShowLines: true,
+				ShowWords: true,
+				ShowBytes: true,
+			},
 			filenames: []string{"a.txt", "b.txt"},
-			wants:     "      10       20      100 a.txt b.txt\n",
+			wants:     "10 20 100 a.txt b.txt\n",
+		},
+		{
+			name: "show lines only",
+			counts: counter.Counts{
+				Lines: 1,
+				Words: 5,
+				Bytes: 24,
+			},
+			opts: counter.DisplayOptions{
+				ShowLines: true,
+				ShowWords: false,
+				ShowBytes: false,
+			},
+			filenames: []string{"words.txt"},
+			wants:     "1 words.txt\n",
+		},
+		{
+			name: "show words only",
+			counts: counter.Counts{
+				Lines: 1,
+				Words: 5,
+				Bytes: 24,
+			},
+			opts: counter.DisplayOptions{
+				ShowLines: false,
+				ShowWords: true,
+				ShowBytes: false,
+			},
+			filenames: []string{"words.txt"},
+			wants:     "5 words.txt\n",
+		},
+		{
+			name: "show bytes only",
+			counts: counter.Counts{
+				Lines: 1,
+				Words: 5,
+				Bytes: 24,
+			},
+			opts: counter.DisplayOptions{
+				ShowLines: false,
+				ShowWords: false,
+				ShowBytes: true,
+			},
+			filenames: []string{"words.txt"},
+			wants:     "24 words.txt\n",
+		},
+		{
+			name: "show lines and bytes no words",
+			counts: counter.Counts{
+				Lines: 1,
+				Words: 5,
+				Bytes: 24,
+			},
+			opts: counter.DisplayOptions{
+				ShowLines: true,
+				ShowWords: false,
+				ShowBytes: true,
+			},
+			filenames: []string{"words.txt"},
+			wants:     "1 24 words.txt\n",
+		},
+		{
+			name: "show words and bytes no lines",
+			counts: counter.Counts{
+				Lines: 1,
+				Words: 5,
+				Bytes: 24,
+			},
+			opts: counter.DisplayOptions{
+				ShowLines: false,
+				ShowWords: true,
+				ShowBytes: true,
+			},
+			filenames: nil,
+			wants:     "5 24\n",
 		},
 	}
 
@@ -419,7 +515,7 @@ func TestPrint(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			buffer := &bytes.Buffer{}
 
-			tc.counts.Print(buffer, tc.filenames...)
+			tc.counts.Print(buffer, tc.opts, tc.filenames...)
 
 			if buffer.String() != tc.wants {
 				t.Logf("expected: %q got: %q", tc.wants, buffer.String())
