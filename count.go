@@ -26,6 +26,26 @@ func (c Counts) Add(other Counts) Counts {
 	return c
 }
 
+func PrintHeader(w io.Writer, opts DisplayOptions) {
+	labels := []string{}
+
+	if opts.ShouldShowLines() {
+		labels = append(labels, "lines")
+	}
+
+	if opts.ShouldShowWords() {
+		labels = append(labels, "words")
+	}
+
+	if opts.ShouldShowBytes() {
+		labels = append(labels, "bytes")
+	}
+
+	lines := strings.Join(labels, "\t") + "\t"
+
+	fmt.Fprint(w, lines+"\n")
+}
+
 func (c Counts) Print(w io.Writer, opts DisplayOptions, suffixes ...string) {
 	stats := []string{}
 

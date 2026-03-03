@@ -9,9 +9,10 @@ import (
 )
 
 type DisplayOptions struct {
-	ShowBytes bool
-	ShowWords bool
-	ShowLines bool
+	ShowBytes  bool
+	ShowWords  bool
+	ShowLines  bool
+	ShowHeader bool
 }
 
 func (d DisplayOptions) ShouldShowBytes() bool {
@@ -36,6 +37,7 @@ func (d DisplayOptions) ShouldShowLines() bool {
 
 	return d.ShowLines
 }
+
 func main() {
 	opts := DisplayOptions{}
 
@@ -60,6 +62,13 @@ func main() {
 		"Used to toggle whether or not to show the word count",
 	)
 
+	flag.BoolVar(
+		&opts.ShowHeader,
+		"header",
+		false,
+		"Used to toggle whether or not to show the headers for all the data being parsed",
+	)
+
 	flag.Parse()
 
 	log.SetFlags(0)
@@ -70,6 +79,10 @@ func main() {
 
 	filenames := flag.Args()
 	didError := false
+
+	if opts.ShowHeader {
+		PrintHeader(wr, opts)
+	}
 
 	for _, filename := range filenames {
 

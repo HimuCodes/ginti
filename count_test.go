@@ -541,6 +541,87 @@ func TestPrint(t *testing.T) {
 }
 
 
+func TestPrintHeader(t *testing.T) {
+	testCases := []struct {
+		name  string
+		opts  counter.DisplayOptions
+		wants string
+	}{
+		{
+			name:  "all defaults no flags",
+			opts:  counter.DisplayOptions{},
+			wants: "lines\twords\tbytes\t\n",
+		},
+		{
+			name: "all flags set",
+			opts: counter.DisplayOptions{
+				ShowLines: true,
+				ShowWords: true,
+				ShowBytes: true,
+			},
+			wants: "lines\twords\tbytes\t\n",
+		},
+		{
+			name: "lines only",
+			opts: counter.DisplayOptions{
+				ShowLines: true,
+			},
+			wants: "lines\t\n",
+		},
+		{
+			name: "words only",
+			opts: counter.DisplayOptions{
+				ShowWords: true,
+			},
+			wants: "words\t\n",
+		},
+		{
+			name: "bytes only",
+			opts: counter.DisplayOptions{
+				ShowBytes: true,
+			},
+			wants: "bytes\t\n",
+		},
+		{
+			name: "lines and bytes",
+			opts: counter.DisplayOptions{
+				ShowLines: true,
+				ShowBytes: true,
+			},
+			wants: "lines\tbytes\t\n",
+		},
+		{
+			name: "words and bytes",
+			opts: counter.DisplayOptions{
+				ShowWords: true,
+				ShowBytes: true,
+			},
+			wants: "words\tbytes\t\n",
+		},
+		{
+			name: "lines and words",
+			opts: counter.DisplayOptions{
+				ShowLines: true,
+				ShowWords: true,
+			},
+			wants: "lines\twords\t\n",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			buffer := &bytes.Buffer{}
+
+			counter.PrintHeader(buffer, tc.opts)
+
+			if buffer.String() != tc.wants {
+				t.Logf("expected: %q got: %q", tc.wants, buffer.String())
+				t.Fail()
+			}
+		})
+	}
+}
+
 func TestAddCounts(t *testing.T) {
 	type inputs struct {
 		counts counter.Counts
