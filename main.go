@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"text/tabwriter"
 )
 
 type DisplayOptions struct {
@@ -63,6 +64,8 @@ func main() {
 
 	log.SetFlags(0)
 
+	wr := tabwriter.NewWriter(os.Stdout, 0, 8, 1, ' ', tabwriter.AlignRight)
+
 	totals := Counts{}
 
 	filenames := flag.Args()
@@ -79,17 +82,18 @@ func main() {
 
 		totals = totals.Add(counts)
 
-		counts.Print(os.Stdout, opts, filename)
+		counts.Print(wr, opts, filename)
 	}
 
 	if len(filenames) == 0 {
-		GetCounts(os.Stdin).Print(os.Stdout, opts)
+		GetCounts(os.Stdin).Print(wr, opts)
 	}
 
 	if len(filenames) > 1 {
-		totals.Print(os.Stdout, opts, "total")
+		totals.Print(wr, opts, "total")
 	}
 
+	wr.Flush()
 	if didError {
 		os.Exit(1)
 	}

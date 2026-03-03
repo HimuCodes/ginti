@@ -27,25 +27,30 @@ func (c Counts) Add(other Counts) Counts {
 }
 
 func (c Counts) Print(w io.Writer, opts DisplayOptions, suffixes ...string) {
-	xs := []string{}
+	stats := []string{}
 
 	if opts.ShouldShowLines() {
-		xs = append(xs, strconv.Itoa(c.Lines))
+		stats = append(stats, strconv.Itoa(c.Lines))
 	}
 
 	if opts.ShouldShowWords() {
-		xs = append(xs, strconv.Itoa(c.Words))
+		stats = append(stats, strconv.Itoa(c.Words))
 	}
 
 	if opts.ShouldShowBytes() {
-		xs = append(xs, strconv.Itoa(c.Bytes))
+		stats = append(stats, strconv.Itoa(c.Bytes))
 	}
 
-	xs = append(xs, suffixes...)
+	line := strings.Join(stats, "\t") + "\t"
 
-	line := strings.Join(xs, " ")
+	fmt.Fprint(w, line)
 
-	fmt.Fprintln(w, line)
+	suffixStr := strings.Join(suffixes, " ")
+	if suffixStr != "" {
+		fmt.Fprintf(w, " %s", suffixStr)
+	}
+
+	fmt.Fprint(w, "\n")
 }
 
 func GetCounts(f io.Reader) Counts {

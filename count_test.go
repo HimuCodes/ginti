@@ -387,7 +387,7 @@ func TestPrint(t *testing.T) {
 				ShowBytes: true,
 			},
 			filenames: []string{"words.txt"},
-			wants:     "1 5 24 words.txt\n",
+			wants:     "1\t5\t24\t words.txt\n",
 		},
 		{
 			name: "empty counts no filename",
@@ -402,7 +402,7 @@ func TestPrint(t *testing.T) {
 				ShowBytes: true,
 			},
 			filenames: nil,
-			wants:     "0 0 0\n",
+			wants:     "0\t0\t0\t\n",
 		},
 		{
 			name: "large numbers with filename",
@@ -417,7 +417,7 @@ func TestPrint(t *testing.T) {
 				ShowBytes: true,
 			},
 			filenames: []string{"big.txt"},
-			wants:     "1000 5000 30000 big.txt\n",
+			wants:     "1000\t5000\t30000\t big.txt\n",
 		},
 		{
 			name: "multiple filenames",
@@ -432,7 +432,7 @@ func TestPrint(t *testing.T) {
 				ShowBytes: true,
 			},
 			filenames: []string{"a.txt", "b.txt"},
-			wants:     "10 20 100 a.txt b.txt\n",
+			wants:     "10\t20\t100\t a.txt b.txt\n",
 		},
 		{
 			name: "show lines only",
@@ -447,7 +447,7 @@ func TestPrint(t *testing.T) {
 				ShowBytes: false,
 			},
 			filenames: []string{"words.txt"},
-			wants:     "1 words.txt\n",
+			wants:     "1\t words.txt\n",
 		},
 		{
 			name: "show words only",
@@ -462,7 +462,7 @@ func TestPrint(t *testing.T) {
 				ShowBytes: false,
 			},
 			filenames: []string{"words.txt"},
-			wants:     "5 words.txt\n",
+			wants:     "5\t words.txt\n",
 		},
 		{
 			name: "show bytes only",
@@ -477,7 +477,7 @@ func TestPrint(t *testing.T) {
 				ShowBytes: true,
 			},
 			filenames: []string{"words.txt"},
-			wants:     "24 words.txt\n",
+			wants:     "24\t words.txt\n",
 		},
 		{
 			name: "show lines and bytes no words",
@@ -492,7 +492,7 @@ func TestPrint(t *testing.T) {
 				ShowBytes: true,
 			},
 			filenames: []string{"words.txt"},
-			wants:     "1 24 words.txt\n",
+			wants:     "1\t24\t words.txt\n",
 		},
 		{
 			name: "show words and bytes no lines",
@@ -507,7 +507,22 @@ func TestPrint(t *testing.T) {
 				ShowBytes: true,
 			},
 			filenames: nil,
-			wants:     "5 24\n",
+			wants:     "5\t24\t\n",
+		},
+		{
+			name: "empty filename",
+			counts: counter.Counts{
+				Lines: 1,
+				Words: 4,
+				Bytes: 20,
+			},
+			opts: counter.DisplayOptions{
+				ShowLines: true,
+				ShowWords: true,
+				ShowBytes: true,
+			},
+			filenames: nil,
+			wants:     "1\t4\t20\t\n",
 		},
 	}
 
