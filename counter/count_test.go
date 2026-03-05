@@ -1,11 +1,11 @@
-package main_test
+package counter_test
 
 import (
 	"bytes"
 	"strings"
 	"testing"
 
-	counter "github.com/HimuCodes/counter"
+	counter "github.com/HimuCodes/ginti/counter"
 )
 
 func TestCountWords(t *testing.T) {
@@ -539,7 +539,6 @@ func TestPrint(t *testing.T) {
 		})
 	}
 }
-
 
 func TestPrintHeader(t *testing.T) {
 	testCases := []struct {
