@@ -38,7 +38,12 @@ func main() {
 
 	flag.Parse()
 
-	opts := display.NewOptions(*showBytes, *showWords, *showLines, *showHeader)
+	opts := display.NewOptions(display.NewOptionsArgs{
+		ShowBytes:  *showBytes,
+		ShowWords:  *showWords,
+		ShowLines:  *showLines,
+		ShowHeader: *showHeader,
+	})
 
 	log.SetFlags(0)
 
