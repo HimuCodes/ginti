@@ -12,37 +12,33 @@ import (
 )
 
 func main() {
-	opts := display.Options{}
-
-	flag.BoolVar(
-		&opts.ShowLines,
+	showLines := flag.Bool(
 		"l",
 		false,
 		"Used to toggle whether or not to show the line count",
 	)
 
-	flag.BoolVar(
-		&opts.ShowBytes,
+	showBytes := flag.Bool(
 		"c",
 		false,
 		"Used to toggle whether or not to show the byte count",
 	)
 
-	flag.BoolVar(
-		&opts.ShowWords,
+	showWords := flag.Bool(
 		"w",
 		false,
 		"Used to toggle whether or not to show the word count",
 	)
 
-	flag.BoolVar(
-		&opts.ShowHeader,
+	showHeader := flag.Bool(
 		"header",
 		false,
 		"Used to toggle whether or not to show the headers for all the data being parsed",
 	)
 
 	flag.Parse()
+
+	opts := display.NewOptions(*showBytes, *showWords, *showLines, *showHeader)
 
 	log.SetFlags(0)
 
@@ -53,7 +49,7 @@ func main() {
 	filenames := flag.Args()
 	didError := false
 
-	if opts.ShowHeader {
+	if opts.ShouldShowHeader() {
 		counter.PrintHeader(wr, opts)
 	}
 
