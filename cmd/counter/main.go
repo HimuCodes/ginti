@@ -8,10 +8,11 @@ import (
 	"text/tabwriter"
 
 	"github.com/HimuCodes/ginti/counter"
+	"github.com/HimuCodes/ginti/display"
 )
 
 func main() {
-	opts := counter.DisplayOptions{}
+	opts := display.Options{}
 
 	flag.BoolVar(
 		&opts.ShowLines,

@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	counter "github.com/HimuCodes/ginti/counter"
+	"github.com/HimuCodes/ginti/display"
 )
 
 func TestCountWords(t *testing.T) {
@@ -370,7 +371,7 @@ func TestPrint(t *testing.T) {
 	testCases := []struct {
 		name      string
 		counts    counter.Counts
-		opts      counter.DisplayOptions
+		opts      display.Options
 		filenames []string
 		wants     string
 	}{
@@ -381,7 +382,7 @@ func TestPrint(t *testing.T) {
 				Words: 5,
 				Bytes: 24,
 			},
-			opts: counter.DisplayOptions{
+			opts: display.Options{
 				ShowLines: true,
 				ShowWords: true,
 				ShowBytes: true,
@@ -396,7 +397,7 @@ func TestPrint(t *testing.T) {
 				Words: 0,
 				Bytes: 0,
 			},
-			opts: counter.DisplayOptions{
+			opts: display.Options{
 				ShowLines: true,
 				ShowWords: true,
 				ShowBytes: true,
@@ -411,7 +412,7 @@ func TestPrint(t *testing.T) {
 				Words: 5000,
 				Bytes: 30000,
 			},
-			opts: counter.DisplayOptions{
+			opts: display.Options{
 				ShowLines: true,
 				ShowWords: true,
 				ShowBytes: true,
@@ -426,7 +427,7 @@ func TestPrint(t *testing.T) {
 				Words: 20,
 				Bytes: 100,
 			},
-			opts: counter.DisplayOptions{
+			opts: display.Options{
 				ShowLines: true,
 				ShowWords: true,
 				ShowBytes: true,
@@ -441,7 +442,7 @@ func TestPrint(t *testing.T) {
 				Words: 5,
 				Bytes: 24,
 			},
-			opts: counter.DisplayOptions{
+			opts: display.Options{
 				ShowLines: true,
 				ShowWords: false,
 				ShowBytes: false,
@@ -456,7 +457,7 @@ func TestPrint(t *testing.T) {
 				Words: 5,
 				Bytes: 24,
 			},
-			opts: counter.DisplayOptions{
+			opts: display.Options{
 				ShowLines: false,
 				ShowWords: true,
 				ShowBytes: false,
@@ -471,7 +472,7 @@ func TestPrint(t *testing.T) {
 				Words: 5,
 				Bytes: 24,
 			},
-			opts: counter.DisplayOptions{
+			opts: display.Options{
 				ShowLines: false,
 				ShowWords: false,
 				ShowBytes: true,
@@ -486,7 +487,7 @@ func TestPrint(t *testing.T) {
 				Words: 5,
 				Bytes: 24,
 			},
-			opts: counter.DisplayOptions{
+			opts: display.Options{
 				ShowLines: true,
 				ShowWords: false,
 				ShowBytes: true,
@@ -501,7 +502,7 @@ func TestPrint(t *testing.T) {
 				Words: 5,
 				Bytes: 24,
 			},
-			opts: counter.DisplayOptions{
+			opts: display.Options{
 				ShowLines: false,
 				ShowWords: true,
 				ShowBytes: true,
@@ -516,7 +517,7 @@ func TestPrint(t *testing.T) {
 				Words: 4,
 				Bytes: 20,
 			},
-			opts: counter.DisplayOptions{
+			opts: display.Options{
 				ShowLines: true,
 				ShowWords: true,
 				ShowBytes: true,
@@ -543,17 +544,17 @@ func TestPrint(t *testing.T) {
 func TestPrintHeader(t *testing.T) {
 	testCases := []struct {
 		name  string
-		opts  counter.DisplayOptions
+		opts  display.Options
 		wants string
 	}{
 		{
 			name:  "all defaults no flags",
-			opts:  counter.DisplayOptions{},
+			opts:  display.Options{},
 			wants: "lines\twords\tbytes\t\n",
 		},
 		{
 			name: "all flags set",
-			opts: counter.DisplayOptions{
+			opts: display.Options{
 				ShowLines: true,
 				ShowWords: true,
 				ShowBytes: true,
@@ -562,28 +563,28 @@ func TestPrintHeader(t *testing.T) {
 		},
 		{
 			name: "lines only",
-			opts: counter.DisplayOptions{
+			opts: display.Options{
 				ShowLines: true,
 			},
 			wants: "lines\t\n",
 		},
 		{
 			name: "words only",
-			opts: counter.DisplayOptions{
+			opts: display.Options{
 				ShowWords: true,
 			},
 			wants: "words\t\n",
 		},
 		{
 			name: "bytes only",
-			opts: counter.DisplayOptions{
+			opts: display.Options{
 				ShowBytes: true,
 			},
 			wants: "bytes\t\n",
 		},
 		{
 			name: "lines and bytes",
-			opts: counter.DisplayOptions{
+			opts: display.Options{
 				ShowLines: true,
 				ShowBytes: true,
 			},
@@ -591,7 +592,7 @@ func TestPrintHeader(t *testing.T) {
 		},
 		{
 			name: "words and bytes",
-			opts: counter.DisplayOptions{
+			opts: display.Options{
 				ShowWords: true,
 				ShowBytes: true,
 			},
@@ -599,7 +600,7 @@ func TestPrintHeader(t *testing.T) {
 		},
 		{
 			name: "lines and words",
-			opts: counter.DisplayOptions{
+			opts: display.Options{
 				ShowLines: true,
 				ShowWords: true,
 			},

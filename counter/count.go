@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"strings"
 	"unicode"
+
+	"github.com/HimuCodes/ginti/display"
 )
 
 type Counts struct {
@@ -26,7 +28,7 @@ func (c Counts) Add(other Counts) Counts {
 	return c
 }
 
-func PrintHeader(w io.Writer, opts DisplayOptions) {
+func PrintHeader(w io.Writer, opts display.Options) {
 	labels := []string{}
 
 	if opts.ShouldShowLines() {
@@ -46,7 +48,7 @@ func PrintHeader(w io.Writer, opts DisplayOptions) {
 	fmt.Fprint(w, lines+"\n")
 }
 
-func (c Counts) Print(w io.Writer, opts DisplayOptions, suffixes ...string) {
+func (c Counts) Print(w io.Writer, opts display.Options, suffixes ...string) {
 	stats := []string{}
 
 	if opts.ShouldShowLines() {

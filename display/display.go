@@ -1,13 +1,13 @@
-package counter
+package display
 
-type DisplayOptions struct {
+type Options struct {
 	ShowBytes  bool
 	ShowWords  bool
 	ShowLines  bool
 	ShowHeader bool
 }
 
-func (d DisplayOptions) ShouldShowBytes() bool {
+func (d Options) ShouldShowBytes() bool {
 	if !d.ShowBytes && !d.ShowWords && !d.ShowLines {
 		return true
 	}
@@ -15,14 +15,14 @@ func (d DisplayOptions) ShouldShowBytes() bool {
 	return d.ShowBytes
 }
 
-func (d DisplayOptions) ShouldShowWords() bool {
+func (d Options) ShouldShowWords() bool {
 	if !d.ShowBytes && !d.ShowWords && !d.ShowLines {
 		return true
 	}
 
 	return d.ShowWords
 }
-func (d DisplayOptions) ShouldShowLines() bool {
+func (d Options) ShouldShowLines() bool {
 	if !d.ShowBytes && !d.ShowWords && !d.ShowLines {
 		return true
 	}
