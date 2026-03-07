@@ -16,27 +16,26 @@ type DisplayOptions struct {
 	ShowHeader bool
 }
 
-func (d DisplayOptions) ShouldShowBytes() bool {
-	if !d.ShowBytes && !d.ShowWords && !d.ShowLines {
-		return true
-	}
+type FileCountsResult struct {
+	counts   Counts
+	filename string
+	err      error
+}
 
-	return d.ShowBytes
+func (d DisplayOptions) AnyTrue() bool {
+	return d.ShowBytes || d.ShowWords || d.ShowLines
+}
+
+func (d DisplayOptions) ShouldShowBytes() bool {
+	return !d.AnyTrue() || d.ShowBytes
 }
 
 func (d DisplayOptions) ShouldShowWords() bool {
-	if !d.ShowBytes && !d.ShowWords && !d.ShowLines {
-		return true
-	}
-
-	return d.ShowWords
+	return !d.AnyTrue() || d.ShowWords
 }
-func (d DisplayOptions) ShouldShowLines() bool {
-	if !d.ShowBytes && !d.ShowWords && !d.ShowLines {
-		return true
-	}
 
-	return d.ShowLines
+func (d DisplayOptions) ShouldShowLines() bool {
+	return !d.AnyTrue() || d.ShowLines
 }
 
 func main() {
@@ -81,36 +80,22 @@ func main() {
 	filenames := flag.Args()
 	didError := false
 
-	wg := sync.WaitGroup{}
-	wg.Add(len(filenames))
-
-	l := sync.Mutex{}
-
 	if opts.ShowHeader {
 		PrintHeader(wr, opts)
 	}
 
-	for _, filename := range filenames {
-		go func() {
-			defer wg.Done()
+	results := CountFiles(filenames)
 
-			counts, err := CountFile(filename)
-			if err != nil {
-				didError = true
-				fmt.Fprintln(os.Stderr, "counter:", err)
+	for res := range results {
+		if res.err != nil {
+			didError = true
+			fmt.Fprintln(os.Stderr, "counter:", res.err)
+			continue
+		}
 
-				return
-			}
-
-			l.Lock()
-			defer l.Unlock()
-			// state mutated below
-			totals = totals.Add(counts)
-
-			counts.Print(wr, opts, filename)
-		}()
+		totals = totals.Add(res.counts)
+		res.counts.Print(wr, opts, res.filename)
 	}
-	wg.Wait()
 
 	if len(filenames) == 0 {
 		GetCounts(os.Stdin).Print(wr, opts)
@@ -124,4 +109,30 @@ func main() {
 	if didError {
 		os.Exit(1)
 	}
+}
+
+func CountFiles(filenames []string) <-chan FileCountsResult {
+	ch := make(chan FileCountsResult)
+	wg := sync.WaitGroup{}
+
+	for _, filename := range filenames {
+		wg.Add(1)
+		go func(fname string) {
+			defer wg.Done()
+
+			counts, err := CountFile(fname)
+			ch <- FileCountsResult{
+				counts:   counts,
+				filename: fname,
+				err:      err,
+			}
+		}(filename)
+	}
+
+	go func() {
+		wg.Wait()
+		close(ch)
+	}()
+
+	return ch
 }
