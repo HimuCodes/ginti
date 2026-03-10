@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"io"
 	"os"
@@ -15,6 +16,17 @@ type Counts struct {
 	Bytes int
 	Words int
 	Lines int
+}
+
+var isSpaceTable [256]bool
+
+func init() {
+	for i := 0; i < 256; i++ {
+		c := byte(i)
+		if c <= ' ' && (c == ' ' || c == '\n' || c == '\t' || c == '\r' || c == '\v' || c == '\f') {
+			isSpaceTable[i] = true
+		}
+	}
 }
 
 // Add will modify the values of the count by
@@ -74,10 +86,6 @@ func (c Counts) Print(w io.Writer, opts DisplayOptions, suffixes ...string) {
 	fmt.Fprint(w, "\n")
 }
 
-func isSpace(c byte) bool {
-	return c <= ' ' && (c == ' ' || c == '\n' || c == '\t' || c == '\r' || c == '\v' || c == '\f')
-}
-
 func GetCounts(f io.Reader) Counts {
 	res := Counts{}
 
@@ -88,15 +96,11 @@ func GetCounts(f io.Reader) Counts {
 		n, err := f.Read(buf)
 		if n > 0 {
 			res.Bytes += n
+			chunk := buf[:n]
+			res.Lines += bytes.Count(chunk, '\n')
 
 			for i := 0; i < n; i++ {
-				c := buf[i]
-
-				if c == '\n' {
-					res.Lines++
-				}
-
-				space := isSpace(c)
+				space := isSpaceTable[chunk[i]]
 
 				if !space && !isInsideWord {
 					res.Words++
@@ -126,7 +130,7 @@ func countChunk(f *os.File, start, end int64) Counts {
 	if start != 0 {
 		peek := make([]byte, 1)
 		_, err := f.ReadAt(peek, start-1)
-		if err == nil && !isSpace(peek[0]) {
+		if err == nil && !isSpaceTable[peek[0]] {
 			isInsideWord = true
 		}
 	}
@@ -139,13 +143,11 @@ func countChunk(f *os.File, start, end int64) Counts {
 
 		n, err := f.ReadAt(buf[:toRead], curr)
 		if n > 0 {
-			for i := 0; i < n; i++ {
-				c := buf[i]
-				if c == '\n' {
-					res.Lines++
-				}
+			chunk := buf[:n]
+			res.Lines += bytes.Count(chunk, '\n')
 
-				space := isSpace(c)
+			for i := 0; i < n; i++ {
+				space := isSpaceTable[chunk[i]]
 				if !space && !isInsideWord {
 					res.Words++
 				}
