@@ -5,7 +5,7 @@ Ginti is a Go-based implementation of the standard `wc` utility, optimized for m
 ## Performance Evolution
 
 Target: 1.1GB text file (`lots_of_words.txt`)
-Environment: Arch Linux (x86_64), Multi-core CPU, NVMe SSD
+Environment: Arch Linux (x86_64), Zen 3 Architecture, NVMe SSD
 
 | Level | Execution Time | Speed vs wc | CPU Instructions | Key Technique |
 | :--- | :--- | :--- | :--- | :--- |
@@ -14,6 +14,17 @@ Environment: Arch Linux (x86_64), Multi-core CPU, NVMe SSD
 | Level 2 | 0.31s | 8.4x | 24.4B | `ReadAt` + Multi-core Concurrency |
 | **Level 3** | **0.24s** | **11.2x** | **11.7B** | **Zero-Copy Memory Mapping (mmap)** |
 | Standard `wc` | 2.70s | 1.0x | 30.3B | Sequential C Implementation |
+
+## System Specifications
+
+The benchmarks above were conducted on the following hardware:
+
+*   **Machine:** Lenovo IdeaPad Gaming 3 15ACH6
+*   **CPU:** AMD Ryzen 5 5600H (6 Cores, 12 Threads, Zen 3 Architecture)
+*   **RAM:** 16GB DDR4-3200 MT/s Dual Channel (Hynix + Crucial)
+*   **Storage:** KIOXIA EXCERIA PLUS G3 NVMe SSD (PCIe Gen4 x4)
+*   **OS:** Arch Linux (Kernel: 6.19.6-arch1-1)
+*   **Compiler:** Go 1.24+
 
 ## Implementation Methodology
 
