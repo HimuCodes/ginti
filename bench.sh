@@ -31,7 +31,7 @@ if [[ ! -f "$TARGET_FILE" ]]; then
 fi
 
 # Create a small file for boundary testing (1KB)
-head -c 1024 /dev/urandom > "$SMALL_FILE"
+head -c 1024 "$TARGET_FILE" > "$SMALL_FILE"
 
 # 2. Dependency Validation
 for cmd in hyperfine perf /usr/bin/time; do
@@ -93,7 +93,7 @@ echo -e "\n${BLUE}Phase 5: Hardware Metric Extraction (perf stat)${NC}"
 echo "-----------------------------------------------------"
 function run_perf() {
     echo -e "\n${GREEN}Metric: $1${NC}"
-    perf stat -e cpu-cycles,instructions,branches,branch-misses,L1-dcache-load-misses "$2" "$TARGET_FILE" 2>&1 | \
+    perf stat -e cpu-cycles,instructions,branches,branch-misses,L1-dcache-load-misses -- "$2" "$TARGET_FILE" > /dev/null 2>&1 | \
     grep -E 'cycles|instructions|branches|branch-misses|dcache-load-misses|seconds'
 }
 
