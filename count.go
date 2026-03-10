@@ -7,7 +7,6 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"unicode"
 )
 
 type Counts struct {
@@ -76,27 +75,34 @@ func (c Counts) Print(w io.Writer, opts DisplayOptions, suffixes ...string) {
 func GetCounts(f io.Reader) Counts {
 	res := Counts{}
 
-	reader := bufio.NewReader(f)
-
+	buf := make([]byte, 32*1024)
 	isInsideWord := false
+
 	for {
-		r, size, err := reader.ReadRune()
+		n, err := f.Read(buf)
+		if n > 0 {
+			res.Bytes += n
+
+			for i := 0; i < n; i++ {
+				c := buf[i]
+
+				if c == '\n' {
+					res.Lines++
+				}
+
+				isSpace := c <= ' ' && (c == ' ' || c == '\n' || c == '\t' || c == '\r' || c == '\v' || c == '\f')
+
+				if !isSpace && !isInsideWord {
+					res.Words++
+				}
+
+				isInsideWord = !isSpace
+			}
+		}
+
 		if err != nil {
 			break
 		}
-
-		res.Bytes += size
-		if r == '\n' {
-			res.Lines++
-		}
-
-		isSpace := unicode.IsSpace(r)
-
-		if !isSpace && !isInsideWord {
-			res.Words++
-		}
-
-		isInsideWord = !isSpace
 	}
 
 	return res
