@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"bytes"
 	"fmt"
 	"io"
@@ -283,38 +282,13 @@ func countChunk(f *os.File, start, end int64) Counts {
 }
 
 func CountWords(file io.Reader) int {
-	wordCount := 0
-
-	scanner := bufio.NewScanner(file)
-	scanner.Split(bufio.ScanWords)
-
-	for scanner.Scan() {
-		wordCount++
-	}
-	return wordCount
+	return GetCounts(file).Words
 }
 
 func CountLines(r io.Reader) int {
-	linesCount := 0
-
-	reader := bufio.NewReader(r)
-
-	for {
-		r, _, err := reader.ReadRune()
-		if err != nil {
-			break
-		}
-
-		if r == '\n' {
-			linesCount++
-		}
-
-	}
-
-	return linesCount
+	return GetCounts(r).Lines
 }
 
 func CountBytes(r io.Reader) int {
-	byteCount, _ := io.Copy(io.Discard, r)
-	return int(byteCount)
+	return GetCounts(r).Bytes
 }
