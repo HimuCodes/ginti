@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"syscall"
 )
 
 type Counts struct {
@@ -97,7 +98,7 @@ func GetCounts(f io.Reader) Counts {
 		if n > 0 {
 			res.Bytes += n
 			chunk := buf[:n]
-			res.Lines += bytes.Count(chunk, '\n')
+			res.Lines += bytes.Count(chunk, []byte{'\n'})
 
 			for i := 0; i < n; i++ {
 				space := isSpaceTable[chunk[i]]
@@ -116,6 +117,123 @@ func GetCounts(f io.Reader) Counts {
 	}
 
 	return res
+}
+
+func countChunkMmap(data []byte, start, end int64) Counts {
+	res := Counts{}
+	res.Bytes = int(end - start)
+
+	chunk := data[start:end]
+	res.Lines = bytes.Count(chunk, []byte{'\n'})
+
+	isInsideWord := false
+	if start > 0 && !isSpaceTable[data[start-1]] {
+		isInsideWord = true
+	}
+
+	for _, c := range chunk {
+		space := isSpaceTable[c]
+		if !space && !isInsideWord {
+			res.Words++
+		}
+		isInsideWord = !space
+	}
+
+	return res
+}
+
+func CountFile(filename string) (Counts, error) {
+	file, err := os.Open(filename)
+	if err != nil {
+		return Counts{}, err
+	}
+	defer file.Close()
+
+	info, err := file.Stat()
+	if err != nil {
+		return Counts{}, err
+	}
+
+	fileSize := info.Size()
+
+	// If the file is small, don't bother with goroutines or mmap
+	if fileSize < 1024*1024 {
+		return GetCounts(file), nil
+	}
+
+	// Level 3: Memory Mapping
+	data, err := syscall.Mmap(int(file.Fd()), 0, int(fileSize), syscall.PROT_READ, syscall.MAP_SHARED)
+	if err != nil {
+		// Fallback to Level 2 ReadAt logic if mmap fails
+		return countParallelReadAt(file, fileSize)
+	}
+	defer syscall.Munmap(data)
+
+	numWorkers := runtime.NumCPU()
+	chunkSize := fileSize / int64(numWorkers)
+
+	var wg sync.WaitGroup
+	results := make(chan Counts, numWorkers)
+
+	for i := 0; i < numWorkers; i++ {
+		start := int64(i) * chunkSize
+		end := start + chunkSize
+		if i == numWorkers-1 {
+			end = fileSize
+		}
+
+		wg.Add(1)
+		go func(s, e int64) {
+			defer wg.Done()
+			results <- countChunkMmap(data, s, e)
+		}(start, end)
+	}
+
+	go func() {
+		wg.Wait()
+		close(results)
+	}()
+
+	total := Counts{}
+	for res := range results {
+		total = total.Add(res)
+	}
+
+	return total, nil
+}
+
+func countParallelReadAt(f *os.File, fileSize int64) (Counts, error) {
+	numWorkers := runtime.NumCPU()
+	chunkSize := fileSize / int64(numWorkers)
+
+	var wg sync.WaitGroup
+	results := make(chan Counts, numWorkers)
+
+	for i := 0; i < numWorkers; i++ {
+		start := int64(i) * chunkSize
+		end := start + chunkSize
+		if i == numWorkers-1 {
+			end = fileSize
+		}
+
+		wg.Add(1)
+		go func(s, e int64) {
+			defer wg.Done()
+			results <- countChunk(f, s, e)
+		}(start, end)
+	}
+
+	go func() {
+		wg.Wait()
+		close(results)
+	}()
+
+	total := Counts{}
+	for res := range results {
+		total = total.Add(res)
+	}
+
+	return total, nil
 }
 
 func countChunk(f *os.File, start, end int64) Counts {
@@ -144,7 +262,7 @@ func countChunk(f *os.File, start, end int64) Counts {
 		n, err := f.ReadAt(buf[:toRead], curr)
 		if n > 0 {
 			chunk := buf[:n]
-			res.Lines += bytes.Count(chunk, '\n')
+			res.Lines += bytes.Count(chunk, []byte{'\n'})
 
 			for i := 0; i < n; i++ {
 				space := isSpaceTable[chunk[i]]
@@ -162,58 +280,6 @@ func countChunk(f *os.File, start, end int64) Counts {
 	}
 
 	return res
-}
-
-func CountFile(filename string) (Counts, error) {
-	file, err := os.Open(filename)
-	if err != nil {
-		return Counts{}, err
-	}
-	defer file.Close()
-
-	info, err := file.Stat()
-	if err != nil {
-		return Counts{}, err
-	}
-
-	fileSize := info.Size()
-
-	// If the file is small, don't bother with goroutines
-	if fileSize < 1024*1024 {
-		return GetCounts(file), nil
-	}
-
-	numWorkers := runtime.NumCPU()
-	chunkSize := fileSize / int64(numWorkers)
-
-	var wg sync.WaitGroup
-	results := make(chan Counts, numWorkers)
-
-	for i := 0; i < numWorkers; i++ {
-		start := int64(i) * chunkSize
-		end := start + chunkSize
-		if i == numWorkers-1 {
-			end = fileSize
-		}
-
-		wg.Add(1)
-		go func(s, e int64) {
-			defer wg.Done()
-			results <- countChunk(file, s, e)
-		}(start, end)
-	}
-
-	go func() {
-		wg.Wait()
-		close(results)
-	}()
-
-	total := Counts{}
-	for res := range results {
-		total = total.Add(res)
-	}
-
-	return total, nil
 }
 
 func CountWords(file io.Reader) int {
