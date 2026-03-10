@@ -20,6 +20,7 @@ type FileCountsResult struct {
 	counts   Counts
 	filename string
 	err      error
+	idx      int
 }
 
 func (d DisplayOptions) AnyTrue() bool {
@@ -84,9 +85,15 @@ func main() {
 		PrintHeader(wr, opts)
 	}
 
-	results := CountFiles(filenames)
+	ch := CountFiles(filenames)
 
-	for res := range results {
+	results := make([]FileCountsResult, len(filenames))
+
+	for res := range ch {
+		results[res.idx] = res
+	}
+
+	for _, res := range results {
 		if res.err != nil {
 			didError = true
 			fmt.Fprintln(os.Stderr, "counter:", res.err)
@@ -115,7 +122,7 @@ func CountFiles(filenames []string) <-chan FileCountsResult {
 	ch := make(chan FileCountsResult)
 	wg := sync.WaitGroup{}
 
-	for _, filename := range filenames {
+	for i, filename := range filenames {
 		wg.Add(1)
 		go func(fname string) {
 			defer wg.Done()
@@ -125,6 +132,7 @@ func CountFiles(filenames []string) <-chan FileCountsResult {
 				counts:   counts,
 				filename: fname,
 				err:      err,
+				idx:      i,
 			}
 		}(filename)
 	}
