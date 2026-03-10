@@ -26,6 +26,11 @@ The benchmarks above were conducted on the following hardware:
 *   **OS:** Arch Linux (Kernel: 6.19.6-arch1-1)
 *   **Compiler:** Go 1.24+
 
+## Reproducing Results
+
+To verify these performance claims, download the 1.1GB reference file used in the benchmarks:
+[Download lots_of_words.txt (1.1GB)](https://www.dropbox.com/scl/fi/bknr56grghsbpr7a2c5bs/lots_of_words.txt?rlkey=w9znbedr3rhzrck38yb2de46r&st=wk3h2uyb&dl=1)
+
 ## Implementation Methodology
 
 ### Level 1: Fast Loop & ASCII Optimization
@@ -45,6 +50,6 @@ Some parts of this codebase were developed with the assistance of Generative AI 
 Note: All development up to and including the concurrency branch was performed entirely without AI assistance.
 
 ## Technical Notes
-* **Binary:** `go build -o counter`
-* **Benchmarks:** Managed via `bench.sh` using `hyperfine` and `perf stat`.
-* **Safety:** Implements a fallback to `ReadAt` logic if `mmap` is unsupported by the filesystem.
+*   **Binary:** `go build -o counter`
+*   **Benchmarks:** Managed via `bench.sh` using `hyperfine` and `perf stat`.
+*   **Safety:** Implements a fallback to `ReadAt` logic if `mmap` is unsupported by the filesystem.
