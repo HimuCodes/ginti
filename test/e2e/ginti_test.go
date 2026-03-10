@@ -54,7 +54,7 @@ func TestStdin(t *testing.T) {
 }
 
 func TestSingleFile(t *testing.T) {
-	file, err := os.CreateTemp("", "counter-test-*")
+	file, err := os.CreateTemp("", "ginti-test-*")
 	if err != nil {
 		t.Fatal("couldn't create temp file")
 	}
@@ -131,7 +131,7 @@ func TestNoExist(t *testing.T) {
 }
 
 func createFile(content string) (*os.File, error) {
-	file, err := os.CreateTemp("", "counter-test-*")
+	file, err := os.CreateTemp("", "ginti-test-*")
 	if err != nil {
 		return nil, fmt.Errorf("could not create temp file")
 	}

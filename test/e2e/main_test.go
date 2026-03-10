@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	binName = "counter-test"
+	binName = "ginti-test"
 )
 
 func TestMain(m *testing.M) {

@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	counter "github.com/HimuCodes/counter"
+	counter "github.com/HimuCodes/ginti"
 )
 
 func TestCountWords(t *testing.T) {
