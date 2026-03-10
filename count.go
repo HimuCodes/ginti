@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"runtime"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 type Counts struct {
@@ -72,6 +74,10 @@ func (c Counts) Print(w io.Writer, opts DisplayOptions, suffixes ...string) {
 	fmt.Fprint(w, "\n")
 }
 
+func isSpace(c byte) bool {
+	return c <= ' ' && (c == ' ' || c == '\n' || c == '\t' || c == '\r' || c == '\v' || c == '\f')
+}
+
 func GetCounts(f io.Reader) Counts {
 	res := Counts{}
 
@@ -90,14 +96,62 @@ func GetCounts(f io.Reader) Counts {
 					res.Lines++
 				}
 
-				isSpace := c <= ' ' && (c == ' ' || c == '\n' || c == '\t' || c == '\r' || c == '\v' || c == '\f')
+				space := isSpace(c)
 
-				if !isSpace && !isInsideWord {
+				if !space && !isInsideWord {
 					res.Words++
 				}
 
-				isInsideWord = !isSpace
+				isInsideWord = !space
 			}
+		}
+
+		if err != nil {
+			break
+		}
+	}
+
+	return res
+}
+
+func countChunk(f *os.File, start, end int64) Counts {
+	res := Counts{}
+	res.Bytes = int(end - start)
+
+	buf := make([]byte, 32*1024)
+	curr := start
+	isInsideWord := false
+
+	// Boundary check: Peek at previous byte to see if we're in the middle of a word
+	if start != 0 {
+		peek := make([]byte, 1)
+		_, err := f.ReadAt(peek, start-1)
+		if err == nil && !isSpace(peek[0]) {
+			isInsideWord = true
+		}
+	}
+
+	for curr < end {
+		toRead := int64(len(buf))
+		if curr+toRead > end {
+			toRead = end - curr
+		}
+
+		n, err := f.ReadAt(buf[:toRead], curr)
+		if n > 0 {
+			for i := 0; i < n; i++ {
+				c := buf[i]
+				if c == '\n' {
+					res.Lines++
+				}
+
+				space := isSpace(c)
+				if !space && !isInsideWord {
+					res.Words++
+				}
+				isInsideWord = !space
+			}
+			curr += int64(n)
 		}
 
 		if err != nil {
@@ -113,12 +167,51 @@ func CountFile(filename string) (Counts, error) {
 	if err != nil {
 		return Counts{}, err
 	}
-
 	defer file.Close()
 
-	counts := GetCounts(file)
+	info, err := file.Stat()
+	if err != nil {
+		return Counts{}, err
+	}
 
-	return counts, nil
+	fileSize := info.Size()
+
+	// If the file is small, don't bother with goroutines
+	if fileSize < 1024*1024 {
+		return GetCounts(file), nil
+	}
+
+	numWorkers := runtime.NumCPU()
+	chunkSize := fileSize / int64(numWorkers)
+
+	var wg sync.WaitGroup
+	results := make(chan Counts, numWorkers)
+
+	for i := 0; i < numWorkers; i++ {
+		start := int64(i) * chunkSize
+		end := start + chunkSize
+		if i == numWorkers-1 {
+			end = fileSize
+		}
+
+		wg.Add(1)
+		go func(s, e int64) {
+			defer wg.Done()
+			results <- countChunk(file, s, e)
+		}(start, end)
+	}
+
+	go func() {
+		wg.Wait()
+		close(results)
+	}()
+
+	total := Counts{}
+	for res := range results {
+		total = total.Add(res)
+	}
+
+	return total, nil
 }
 
 func CountWords(file io.Reader) int {
