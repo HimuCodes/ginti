@@ -12,8 +12,10 @@ Environment: Arch Linux (x86_64), Zen 3 Architecture, NVMe SSD
 | Baseline | 6.43s | 0.4x | 110B | `bufio.ReadRune` (UTF-8) |
 | Level 1 | 1.49s | 1.7x | 21.4B | 32KB Buffer + ASCII State Machine |
 | Level 2 | 0.31s | 8.4x | 24.4B | `ReadAt` + Multi-core Concurrency |
-| **Level 3** | **0.24s** | **11.2x** | **11.7B** | **Zero-Copy Memory Mapping (mmap)** |
+| **Level 3** | **0.25s** | **10.58x** | **11.7B** | **Zero-Copy Memory Mapping (mmap)** |
 | Standard `wc` | 2.70s | 1.0x | 30.3B | Sequential C Implementation |
+
+<img width="1920" height="1080" alt="screenshot-2026-03-12_11-53-05" src="https://github.com/user-attachments/assets/5c93197e-228f-43da-8540-60d5bafbf4fa" />
 
 ## System Specifications
 
